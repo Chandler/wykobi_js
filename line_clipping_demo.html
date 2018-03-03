@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/two.js/0.6.0/two.js'></script>
+    <script src='/dist/wykobi_wasm_loader.js'></script>
+    <script src='/bindings/js/bindings.js'></script>
+
+    <div id="draw-shapes"></div>
+
+    <script type='text/javascript'>
+      overrides = {
+        locateFile: function(url) { return "/dist/" + url}
+      }
+      WykobiJS(overrides)
+        .then(function(module){
+          wykobi_api = buildWykobiApi(module)
+          Demo(wykobi_api)
+        })
+
+      function Demo(wykobi_api) {
+        // Make an instance of two and place it on the page.
+        var elem = document.getElementById('draw-shapes');
+        var params = { width: 1000, height: 1000 };
+        var two = new Two(params).appendTo(elem);
+        lightBlue = "#00BFFF"
+
+        // define a triangle
+        polyPoints = [300,100,300,400,50,300]
+        var poly = two.makePath(...polyPoints)
+        poly.stroke = lightBlue
+        poly.linewidth = 4;
+
+
+        visualizeIntersection(two, polyPoints,[0,0,600,600])
+        visualizeIntersection(two, polyPoints,[230,0,300,600])
+
+        two.update();
+      }
+
+      function visualizeIntersection(two, trianglePoints, linePoints) {
+        // draw the line
+        var line = two.makePath(...linePoints);
+        line.linewidth = 4;
+        line.stroke = "#40E0D0"
+
+        // compute the intersection
+        intersectionPoints = wykobi_api.segmentTriangleIntersect(
+          ...(linePoints.concat(polyPoints))
+        )
+
+        //draw the intersection segment
+        intersection = two.makePath(...flatten(intersectionPoints))
+        intersection.stroke = "red"
+        intersection.linewidth = 4;
+
+        // draw some circles at the intersection point
+        console.log(intersectionPoints)
+        for (point of intersectionPoints) {
+          console.log(point)
+          circle = two.makeCircle(point[0], point[1], 5)
+          circle.stroke = "red"
+        }
+      }
+
+      function flatten(arr) {
+        return arr.reduce(function (flat, toFlatten) {
+          return flat.concat(Array.isArray(toFlatten) ? flatten(toFlatten) : toFlatten);
+        }, []);
+      }
+    </script>
+  </body>
+</html>
