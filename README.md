@@ -1,6 +1,8 @@
 
 http://www.wykobi.com/ meets web assembly
 
+![line clipping](demos/line_clipping_demo.png)
+
 ------
 
 you will need:
